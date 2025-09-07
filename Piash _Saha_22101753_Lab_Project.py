@@ -5,7 +5,6 @@ import math
 import random
 import sys
 
-# Game state variables
 camera_pos = (0, -200, 150)
 player_pos = [0, 0, 0]
 player_direction = 0
@@ -16,7 +15,6 @@ top_view = False
 zoom_level = 1
 max_zoom = 3.0
 
-# Jump system variables
 is_jumping = False
 jump_velocity = 0
 gravity = -2.0
