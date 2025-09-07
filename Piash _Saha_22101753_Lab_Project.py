@@ -148,11 +148,10 @@ def init_3d():
 
 def update_lighting():
     """Update the light position to maintain consistent lighting"""
-    # Position the light in the scene
+    
     glPushMatrix()
     glLoadIdentity()
-    
-    # Position light slightly above and in front of the camera
+
     light_pos = [camera_pos[0], camera_pos[1], camera_pos[2] + 50, 1.0]
     glLightfv(GL_LIGHT0, GL_POSITION, light_pos)
     
@@ -164,8 +163,7 @@ def place_game_objects():
     
     rows, cols = len(maze), len(maze[0])
     cell_size = WALL_THICKNESS * 2
-    
-    # Find all open positions
+   
     open_positions = []
     for i in range(rows):
         for j in range(cols):
@@ -173,19 +171,16 @@ def place_game_objects():
                 x = maze_offset_x + j * cell_size + cell_size/2
                 y = maze_offset_y + i * cell_size + cell_size/2
                 open_positions.append((x, y))
-    
-    # Place treasure (ensure it's not at starting position)
+
     if len(open_positions) > 1:
         treasure_pos[0], treasure_pos[1] = random.choice(open_positions[1:])
         open_positions.remove((treasure_pos[0], treasure_pos[1]))
     
-    # Place door (ensure it's not at starting position or treasure position)
     if len(open_positions) > 1:
         door_pos[0], door_pos[1] = random.choice(open_positions[1:])
-        door_pos[2] = 25  # Height for door
+        door_pos[2] = 25  
         open_positions.remove((door_pos[0], door_pos[1]))
     
-    # Place police officers (number based on current level)
     police_positions = []
     police_directions = []
     police_original_positions = []
@@ -197,37 +192,34 @@ def place_game_objects():
             li=[0,90,180,270]
             dir=random.choice(li)
             police_directions.append(dir)
-            police_original_positions.append([x, y])  # Store original position for patrol
-            police_movement_timers.append(0)  # Initialize movement timer
+            police_original_positions.append([x, y])  
+            police_movement_timers.append(0)  
             open_positions.remove((x, y))
     
-    # Initialize lasers based on level
+
     init_lasers()
 
 def init_lasers():
     """Initialize lasers based on current level"""
     global lasers
     
-    # Clear existing lasers
+    
     lasers = []
     
-    # Predefined laser configurations (x1, z1, x2, z2, movement_type)
-    # Coordinates are in maze world space, adjusted for 15x15 maze
+
     base_laser_configs = [
-        (-200, -200, -50, -200, 'horizontal_fixed'),   # Level 1: 2 lasers
+        (-200, -200, -50, -200, 'horizontal_fixed'), 
         (100, -300, 100, -150, 'vertical_fixed'),
-        (-300, 150, -150, 150, 'horizontal_fixed'),    # Level 2: 3 lasers  
-        (-450, -450, -450, -300, 'vertical_fixed'),    # Level 3: 4 lasers
-        (300, 50, 450, 50, 'horizontal_fixed'),        # Level 4: 5 lasers
-        (0, -450, 150, -450, 'horizontal_fixed'),      # Level 5: 6 lasers
-        (-450, 0, -450, 150, 'vertical_fixed'),        # Level 6: 7 lasers
-        (350, -150, 350, 0, 'vertical_fixed'),         # Level 7: 8 lasers
+        (-300, 150, -150, 150, 'horizontal_fixed'),     
+        (-450, -450, -450, -300, 'vertical_fixed'),  
+        (300, 50, 450, 50, 'horizontal_fixed'),       
+        (0, -450, 150, -450, 'horizontal_fixed'),     
+        (-450, 0, -450, 150, 'vertical_fixed'),        
+        (350, -150, 350, 0, 'vertical_fixed'),        
     ]
     
-    # Calculate number of lasers for current level (start with 2, increase by 1 each level)
     num_lasers = min(1 + level, len(base_laser_configs))
     
-    # Create lasers for current level
     for i in range(num_lasers):
         config = base_laser_configs[i]
         laser = Laser(config[0], config[1], config[2], config[3], config[4])
@@ -249,21 +241,19 @@ def init_wall_boundaries():
         for j in range(cols):
             if maze[i][j] == 1:
                 is_door = (i, j) in DOOR_POSITIONS
-                # Calculate wall position to match how walls are actually drawn
+           
                 x = maze_offset_x + j * cell_size
                 y = maze_offset_y + i * cell_size
                 
-                # Walls are drawn centered at (x + WALL_THICKNESS/2, y + WALL_THICKNESS/2) 
-                # and scaled by cell_size, so they actually occupy:
-                # From (center - cell_size/2) to (center + cell_size/2)
+               
                 center_x = x + WALL_THICKNESS/2
                 center_y = y + WALL_THICKNESS/2
                 
                 wall_boundaries.append((
-                    center_x - cell_size/2,  # Left edge
-                    center_y - cell_size/2,  # Bottom edge
-                    center_x + cell_size/2,  # Right edge
-                    center_y + cell_size/2,  # Top edge
+                    center_x - cell_size/2,  
+                    center_y - cell_size/2,  
+                    center_x + cell_size/2,  
+                    center_y + cell_size/2,  
                     is_door
                 ))
 
@@ -274,21 +264,20 @@ def check_maze_perimeter(x, y):
 
 def draw_door(x, y, z, cell_size, wall_thickness, wall_height, orientation):
     """Draw a door on a wall"""
-    door_width = cell_size * 0.6  # Made door wider (was 0.4, now 0.6)
+    door_width = cell_size * 0.6  
     door_height = cell_size * 0.7
     
-    # Enable blending for transparency in cheat mode
     if cheat_mode:
         glEnable(GL_BLEND)
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-        glColor4f(DOOR_COLOR[0], DOOR_COLOR[1], DOOR_COLOR[2], 0.3)  # Transparent door in cheat mode
+        glColor4f(DOOR_COLOR[0], DOOR_COLOR[1], DOOR_COLOR[2], 0.3)  
     else:
         glColor3f(*DOOR_COLOR)
     
     if orientation == 'vertical':
         glPushMatrix()
         glTranslatef(x, y + wall_thickness/2, z + wall_height/2)
-        glScalef(door_width, wall_thickness*1.5, door_height)  # Made door thicker (was 0.5, now 1.5)
+        glScalef(door_width, wall_thickness*1.5, door_height)  
         glutSolidCube(1.0)
         glDisable(GL_LIGHTING)
         
@@ -303,7 +292,7 @@ def draw_door(x, y, z, cell_size, wall_thickness, wall_height, orientation):
     else:
         glPushMatrix()
         glTranslatef(x + wall_thickness/2, y, z + wall_height/2)
-        glScalef(wall_thickness*1.5, door_width, door_height)  # Made door thicker (was 0.5, now 1.5)
+        glScalef(wall_thickness*1.5, door_width, door_height)  
         glutSolidCube(1.0)
         glDisable(GL_LIGHTING)
         
@@ -316,7 +305,7 @@ def draw_door(x, y, z, cell_size, wall_thickness, wall_height, orientation):
         glEnable(GL_LIGHTING)
         glPopMatrix()
     
-    # Disable blending after drawing door
+
     if cheat_mode:
         glDisable(GL_BLEND)
 
@@ -332,18 +321,17 @@ def draw_text(x, y, text, font_size='medium', color=(1, 1, 1)):
     glLoadIdentity()
     glRasterPos2f(x, y)
     
-    # Try to get the proper GLUT font constant
     try:
-        # Import font constants
+   
         from OpenGL.GLUT import GLUT_BITMAP_HELVETICA_18
         font = GLUT_BITMAP_HELVETICA_18
     except ImportError:
-        # Fallback to a working font
+    
         try:
             from OpenGL.GLUT import GLUT_BITMAP_8_BY_13
             font = GLUT_BITMAP_8_BY_13
         except ImportError:
-            # Use a numeric constant that should work
+         
             import ctypes
             font = ctypes.cast(0x0004, ctypes.c_void_p)
     
@@ -358,9 +346,9 @@ def draw_text(x, y, text, font_size='medium', color=(1, 1, 1)):
 def draw_health_bar():
     """Draw player health bar"""
     if cheat_mode and god_mode:
-        return  # Don't show health bar in god mode
+        return  
     
-    # Health bar background
+ 
     glDisable(GL_LIGHTING)
     glColor3f(0.3, 0.3, 0.3)
     glMatrixMode(GL_PROJECTION)
@@ -371,7 +359,7 @@ def draw_health_bar():
     glPushMatrix()
     glLoadIdentity()
     
-    # Background bar
+
     glBegin(GL_QUADS)
     glVertex2f(20, 50)
     glVertex2f(220, 50)
@@ -379,14 +367,14 @@ def draw_health_bar():
     glVertex2f(20, 70)
     glEnd()
     
-    # Health bar
+
     health_ratio = player_health / max_health
     if health_ratio > 0.6:
-        glColor3f(0.0, 1.0, 0.0)  # Green
+        glColor3f(0.0, 1.0, 0.0)  
     elif health_ratio > 0.3:
-        glColor3f(1.0, 1.0, 0.0)  # Yellow
+        glColor3f(1.0, 1.0, 0.0) 
     else:
-        glColor3f(1.0, 0.0, 0.0)  # Red
+        glColor3f(1.0, 0.0, 0.0)  
     
     glBegin(GL_QUADS)
     glVertex2f(20, 50)
@@ -406,7 +394,6 @@ def draw_cheat_indicators():
     if not cheat_mode:
         return
     
-    # Draw cheat mode border
     glDisable(GL_LIGHTING)
     glColor3f(*CHEAT_COLOR)
     glMatrixMode(GL_PROJECTION)
@@ -416,8 +403,7 @@ def draw_cheat_indicators():
     glMatrixMode(GL_MODELVIEW)
     glPushMatrix()
     glLoadIdentity()
-    
-    # Draw border around screen
+  
     glBegin(GL_LINE_LOOP)
     glVertex2f(5, 5)
     glVertex2f(995, 5)
@@ -442,8 +428,7 @@ def draw_player():
     """Draw the player character"""
     if first_person_view:
         return
-    
-    # Change player color if in cheat mode
+
     player_color = CHEAT_COLOR if cheat_mode else PLAYER_TOP_COLOR
     
     if top_view:
@@ -468,14 +453,13 @@ def draw_player():
     glRotatef(player_direction, 0, 0, 1)
     glRotatef(-90, 0, 0, 1)
    
-    # Head
+    
     glPushMatrix()
     glColor3f(0.95, 0.75, 0.65)
     glTranslatef(0, 0, 70)
     glutSolidSphere(10, 16, 16)
     glPopMatrix()
-   
-    # Torso (change color if cheating)
+
     glPushMatrix()
     if cheat_mode:
         glColor3f(*CHEAT_COLOR)
@@ -486,7 +470,6 @@ def draw_player():
     glutSolidCube(1.0)
     glPopMatrix()
    
-    # Arms
     glPushMatrix()
     if cheat_mode:
         glColor3f(*CHEAT_COLOR)
@@ -506,8 +489,8 @@ def draw_player():
     glScalef(4, 4, 20)
     glutSolidCube(1.0)
     glPopMatrix()
-   
-    # Legs
+
+    
     glPushMatrix()
     glColor3f(0.1, 0.1, 0.3)
     glTranslatef(7, 0, 15)
@@ -522,7 +505,7 @@ def draw_player():
     glutSolidCube(1.0)
     glPopMatrix()
    
-    # Neck
+    
     glPushMatrix()
     glColor3f(0.95, 0.75, 0.65)
     glTranslatef(0, 0, 65)
@@ -540,7 +523,7 @@ def draw_police():
         glRotatef(police_directions[i], 0, 0, 1)
         glRotatef(-90, 0, 0, 1)
         
-        # Body
+    
         glColor3f(*POLICE_COLOR)
         glPushMatrix()
         glTranslatef(0, 0, 45)
@@ -548,29 +531,29 @@ def draw_police():
         glutSolidCube(1.0)       
         glPopMatrix()
         
-        # Head
+        
         glColor3f(0.95, 0.75, 0.65)
         glPushMatrix()
         glTranslatef(0, 0, 70) 
         glutSolidSphere(10, 16, 16)
         glPopMatrix()
         
-        # Hat - white cone
-        glColor3f(1.0, 1.0, 1.0)  # White color
+     
+        glColor3f(1.0, 1.0, 1.0) 
         glPushMatrix()
         glTranslatef(0, 0, 80)
         glRotatef(-90, 1, 0, 0)
-        glutSolidCone(12, 15, 16, 8)  # Cone with base radius 12, height 15
+        glutSolidCone(12, 15, 16, 8)  
         glPopMatrix()
         
-        # Right arm
+      
         glPushMatrix()
         glColor3f(0.95, 0.75, 0.65)
         glTranslatef(10,0,10)          
         gluCylinder(gluNewQuadric(), 2, 2, 40, 32, 32)
         glPopMatrix()
 
-        # Left arm 
+
         glPushMatrix()
         glColor3f(0.95, 0.75, 0.65)
         glTranslatef(-10, 30,80)      
@@ -578,7 +561,7 @@ def draw_police():
         gluCylinder(gluNewQuadric(), 2,2, 40, 32, 32)
         glPopMatrix()       
         
-        # Gun
+        
         glPushMatrix()
         glColor3f(1.0, 0.5, 0.3)
         glTranslatef(-10, 56,97)      
@@ -586,14 +569,14 @@ def draw_police():
         gluCylinder(gluNewQuadric(), 2,2, 40, 32, 32)
         glPopMatrix()   
 
-        # Right leg
+
         glPushMatrix()
         glColor3f(*POLICE_COLOR)
         glTranslatef(10,0,-10)          
         gluCylinder(gluNewQuadric(), 2, 2, 35, 32, 32)
         glPopMatrix()
 
-        # Left leg
+
         glPushMatrix()
         glColor3f(*POLICE_COLOR)
         glTranslatef(-10, 0,-10)      
@@ -611,20 +594,20 @@ def draw_treasure():
     glTranslatef(*treasure_pos)
     glColor3f(*TREASURE_COLOR)
     
-    # Main chest
+
     glPushMatrix()
     glScalef(30, 20, 15)
     glutSolidCube(1.0)
     glPopMatrix()
    
-    # Lid
+    
     glPushMatrix()
     glTranslatef(0, 0, 15)
     glScalef(30, 20, 5)
     glutSolidCube(1.0)
     glPopMatrix()
    
-    # Lock
+
     glColor3f(0.3, 0.3, 0.3)
     glPushMatrix()
     glTranslatef(0, -12, 10)
@@ -639,14 +622,14 @@ def draw_escape_door():
     glTranslatef(*door_pos)
     glColor3f(*DOOR_COLOR)
     
-    # Door frame
+
     glPushMatrix()
     glScalef(35, 10, 50)
     glutSolidCube(1.0)
     glPopMatrix()
     
-    # Door handle
-    glColor3f(1.0, 1.0, 0.0)  # Golden handle
+
+    glColor3f(1.0, 1.0, 0.0) 
     glPushMatrix()
     glTranslatef(-15, 0, 0)
     glutSolidSphere(3, 10, 10)
@@ -671,7 +654,7 @@ def draw_maze():
     offset_x = maze_offset_x
     offset_y = maze_offset_y
     
-    # Enable blending for transparency in cheat mode
+
     if cheat_mode:
         glEnable(GL_BLEND)
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
@@ -690,8 +673,7 @@ def draw_maze():
                 
                 glPushMatrix()
                 glTranslatef(x + WALL_THICKNESS/2, y + WALL_THICKNESS/2, z + WALL_HEIGHT/2)
-                
-                # Set color with alpha for transparency
+              
                 if cheat_mode:
                     glColor4f(*wall_color)
                 else:
@@ -702,7 +684,7 @@ def draw_maze():
                 
                 glDisable(GL_LIGHTING)
                 
-                # Set border color with alpha for transparency
+              
                 if cheat_mode:
                     glColor4f(*border_color)
                 else:
@@ -712,11 +694,11 @@ def draw_maze():
                 glEnable(GL_LIGHTING)
                 glPopMatrix()
     
-    # Disable blending after drawing walls
+
     if cheat_mode:
         glDisable(GL_BLEND)
     
-    # Draw doors
+    
     for door_i, door_j in DOOR_POSITIONS:
         if 0 <= door_i < rows and 0 <= door_j < cols and maze[door_i][door_j] == 1:
             x = offset_x + door_j * cell_size
@@ -736,13 +718,12 @@ def draw_maze():
 
 def draw_floor():
     """Draw the floor grid"""
-    # Calculate maze boundaries for floor
+ 
     maze_min_x = maze_offset_x
     maze_max_x = maze_offset_x + maze_width
     maze_min_y = maze_offset_y
     maze_max_y = maze_offset_y + maze_height
-    
-    # Draw floor only within maze boundaries
+
     glColor3f(*FLOOR_COLOR)
     glBegin(GL_QUADS)
     glVertex3f(maze_min_x, maze_min_y, 0)
@@ -751,28 +732,26 @@ def draw_floor():
     glVertex3f(maze_min_x, maze_max_y, 0)
     glEnd()
    
-    # Draw grid only within maze boundaries
+
     glColor3f(*GRID_COLOR)
     glBegin(GL_LINES)
-    
-    # Calculate maze boundaries
+
     maze_min_x = maze_offset_x
     maze_max_x = maze_offset_x + maze_width
     maze_min_y = maze_offset_y
     maze_max_y = maze_offset_y + maze_height
     
-    # Vertical grid lines (only within maze bounds)
+
     x = maze_min_x
     while x <= maze_max_x:
-        if x % 50 == 0:  # Draw every 50 units to match cell size
+        if x % 50 == 0: 
             glVertex3f(x, maze_min_y, 1)
             glVertex3f(x, maze_max_y, 1)
         x += 50
-    
-    # Horizontal grid lines (only within maze bounds)
+
     y = maze_min_y
     while y <= maze_max_y:
-        if y % 50 == 0:  # Draw every 50 units to match cell size
+        if y % 50 == 0: 
             glVertex3f(maze_min_x, y, 1)
             glVertex3f(maze_max_x, y, 1)
         y += 50
@@ -791,7 +770,7 @@ def is_point_in_wall(x, y, radius=0):
 
 def check_wall_collision(new_x, new_y):
     """Improved collision detection with sliding and minimal boundary checking"""
-    # In wall walk mode, only check maze perimeter
+
     if cheat_mode and wall_walk_mode:
         if not check_maze_perimeter(new_x, new_y):
             return player_pos[0], player_pos[1], False
@@ -799,24 +778,22 @@ def check_wall_collision(new_x, new_y):
     
     current_x, current_y = player_pos[0], player_pos[1]
     
-    # Use the exact player radius with a small safety margin to prevent wall penetration
-    effective_radius = PLAYER_RADIUS + 2  # Add small safety margin
     
-    # Check if the new position would cause collision
+    effective_radius = PLAYER_RADIUS + 2  
+    
+  
     if is_point_in_wall(new_x, new_y, effective_radius):
         
-        # Try moving only in X direction with safety check
+
         if not is_point_in_wall(new_x, current_y, effective_radius):
             return new_x, current_y, True
         
-        # Try moving only in Y direction with safety check
+     
         if not is_point_in_wall(current_x, new_y, effective_radius):
             return current_x, new_y, True
-        
-        # If both axes collide, stay in place
+      
         return current_x, current_y, False
-    
-    # Movement is safe
+
     return new_x, new_y, True
 
 def movement_with_collision_detection(dx, dy):
@@ -824,7 +801,7 @@ def movement_with_collision_detection(dx, dy):
     current_x, current_y = player_pos[0], player_pos[1]
     new_x, new_y = current_x + dx, current_y + dy
     
-    # Normal collision detection
+
     result = check_wall_collision(new_x, new_y)
     if result is None: return False
         
@@ -833,7 +810,6 @@ def movement_with_collision_detection(dx, dy):
     player_pos[0] = final_x
     player_pos[1] = final_y
     
-    # Update visited paths when player moves
     if moved:
         update_visited_paths()
     
@@ -845,37 +821,34 @@ def move_police():
     for i in range(len(police_positions)):
         current_x, current_y, _ = police_positions[i]
         
-        # Increment movement timer
+   
         police_movement_timers[i] += 1
         
-        # Occasionally change direction randomly (every 120-300 frames, i.e., 2-5 seconds at 60fps)
+ 
         if police_movement_timers[i] > random.randint(120, 300):
             police_movement_timers[i] = 0
-            # Random direction change for more dynamic movement
-            if random.random() < 0.3:  # 30% chance to change direction
+            
+            if random.random() < 0.3:
                 police_directions[i] = random.randint(0, 359)
-        
-        # Calculate movement based on current direction
+  
         dx = math.cos(math.radians(police_directions[i])) * 0.8
         dy = math.sin(math.radians(police_directions[i])) * 0.8
         
         new_x = current_x + dx
         new_y = current_y + dy
         
-        # Check for wall collisions
+  
         if not is_point_in_wall(new_x, new_y, POLICE_RADIUS):
             police_positions[i][0] = new_x
             police_positions[i][1] = new_y
         else:
-            # Simple turning strategy when hitting a wall
-            # Randomly choose between: left turn, right turn, or 180 degree turn
+     
             turn_options = [
-                (police_directions[i] - 90) % 360,   # Turn left
-                (police_directions[i] + 90) % 360,   # Turn right  
-                (police_directions[i] + 180) % 360   # Turn around 180 degrees
+                (police_directions[i] - 90) % 360,   
+                (police_directions[i] + 90) % 360,    
+                (police_directions[i] + 180) % 360   
             ]
             
-            # Randomly select one of the three turning options
             police_directions[i] = random.choice(turn_options)
 
 def update_lasers():
@@ -889,31 +862,28 @@ def check_laser_collision():
     global game_over, player_health, player_lives, respawn_timer, showing_respawn_message
     global death_position
     
-    # Skip laser collision if in god mode
+
     if cheat_mode and god_mode:
         return
     
-    # Skip if lasers are disabled
     if laser_disabled:
         return
     
-    # Check if player is jumping - ANY jump height should avoid lasers
+
     if is_jumping and player_pos[2] > 5:
-        # Player is jumping - no laser collision at all
+       
         return
-    
-    # Extra safety check for any height above ground
+
     if player_pos[2] > 8:
-        # Player is clearly above ground level - no laser collision
         return
     
     for laser in lasers:
         if laser.check_collision(player_pos[0], player_pos[1], player_pos[2]):
-            # Player hit by laser - instant game over (no lives left)
+    
             global death_cause
             death_position = player_pos.copy()
             death_cause = "laser"
-            player_lives = 0  # Set lives to 0 for instant game over
+            player_lives = 0  
             game_over = True
             break
 
@@ -921,17 +891,17 @@ def jump():
     """Initiate player jump if not already jumping"""
     global is_jumping, jump_velocity, player_pos
     
-    # Can only jump if on ground (not already jumping)
+   
     if not is_jumping and player_pos[2] <= ground_level:
         is_jumping = True
         jump_velocity = jump_strength
         
-        # Add automatic forward movement during jump (2 grid cells)
-        jump_forward_speed = 200.0  # Move forward 2 grid cells (each cell is 100 units)
+        
+        jump_forward_speed = 200.0 
         forward_x = math.cos(math.radians(player_direction)) * jump_forward_speed
         forward_y = math.sin(math.radians(player_direction)) * jump_forward_speed
         
-        # Apply forward movement with collision detection
+       
         movement_with_collision_detection(forward_x, forward_y)
 
 def update_jump():
