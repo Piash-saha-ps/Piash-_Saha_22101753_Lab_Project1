@@ -18,42 +18,40 @@ max_zoom = 3.0
 is_jumping = False
 jump_velocity = 0
 gravity = -2.0
-jump_strength = 12.0  # Increased for higher jump (approximately 36 units high)
-max_jump_height = 40  # Player can now jump much higher
+jump_strength = 12.0  
+max_jump_height = 40  
 ground_level = 0
 
-# Key state tracking for combination moves
+
 w_key_pressed = False
 space_key_pressed = False
 
-# Font constant
-FONT = 4  # GLUT_BITMAP_HELVETICA_18 equivalent
 
-# Cheat mode variables
+FONT = 4  
+
 cheat_mode = False
 god_mode = False
 wall_walk_mode = False
 player_health = 100
 max_health = 100
 
-# Life system variables
+
 player_lives = 3
 max_lives = 3
 respawn_timer = 0
 showing_respawn_message = False
-respawn_delay = 300  # 5 seconds at 60 FPS
-death_position = [0, 0, 0]  # Position where player died
-death_cause = ""  # Track what caused the player's death
+respawn_delay = 300  
+death_position = [0, 0, 0] 
+death_cause = ""  
 
-# Game objects
 treasure_collected = False
 treasure_pos = [0, 0, 20]
-door_pos = [0, 0, 0]  # Exit door position
-near_treasure = False  # Player is near treasure
-near_door = False      # Player is near door (after collecting treasure)
+door_pos = [0, 0, 0]  
+near_treasure = False  
+near_door = False      
 police_positions = []
 police_directions = []
-police_movement_timers = []  # Timer for random direction changes
+police_movement_timers = []  
 game_over = False
 level_complete = False
 showing_escape_message = False
@@ -61,18 +59,16 @@ waiting_for_next_level = False
 score = 0
 police_patrol_range = 900
 
-# Laser system variables
+
 lasers = []
 laser_disabled = False
 
-# Maze configuration
 WALL_HEIGHT = 100
 WALL_THICKNESS = 50
-PLAYER_RADIUS = 8  # Reduced from 15 to allow better movement in corridors
-COLLISION_MARGIN = 0  # Removed margin to eliminate invisible walls
+PLAYER_RADIUS = 8  
+COLLISION_MARGIN = 0  
 POLICE_RADIUS = 15
 
-# Maze layout (1 = wall, 0 = path)
 maze = [
     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
     [1,0,0,0,0,0,0,1,0,1,0,0,0,0,1],
@@ -91,26 +87,25 @@ maze = [
     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
 ]
 
-# Door positions (row, col) - No static doors, only dynamic escape door
 DOOR_POSITIONS = [
 ]
 
-# Colors
+
 WALL_COLOR = (1, 1, 1)
-WALL_COLOR_CHEAT = (1.0, 1.0, 1.0, 0.3)  # Transparent walls in cheat mode
+WALL_COLOR_CHEAT = (1.0, 1.0, 1.0, 0.3)  
 WALL_BORDER_COLOR = (0, 0, 0)
-WALL_BORDER_COLOR_CHEAT = (0.5, 0.5, 0.5, 0.3)  # Transparent borders in cheat mode
+WALL_BORDER_COLOR_CHEAT = (0.5, 0.5, 0.5, 0.3) 
 DOOR_COLOR = (0.2, 0.4, 0.9)
 FLOOR_COLOR = (0.25, 0.25, 0.25)
 GRID_COLOR = (0.35, 0.35, 0.35)
-PLAYER_TOP_COLOR = (1.0, 0.75, 0.8)  # Light pink
+PLAYER_TOP_COLOR = (1.0, 0.75, 0.8)  
 POLICE_COLOR = (0.0, 0.0, 1.0)
 TREASURE_COLOR = (1.0, 0.84, 0.0)
 BULLET_COLOR = (1.0, 0.0, 0.0)
-CHEAT_COLOR = (1.0, 0.84, 0.0)  # Gold for cheat mode indicators
-LASER_COLOR = (1.0, 0.0, 0.0)  # Red laser beam
-LASER_EMITTER_COLOR = (1.0, 0.5, 0.0)  # Orange laser emitters
-# Game objects
+CHEAT_COLOR = (1.0, 0.84, 0.0)  
+LASER_COLOR = (1.0, 0.0, 0.0)  
+LASER_EMITTER_COLOR = (1.0, 0.5, 0.0)  
+
 wall_boundaries = []
 maze_width = 0
 maze_height = 0
@@ -119,23 +114,21 @@ maze_offset_y = 0
 
 police_original_positions = []
 
-# Add these to your game state variables
 level = 1
 level_message_timer = 0
 showing_level_message = False
-num_police = 2  # Starting number of police
+num_police = 2  
 waiting_for_enter = False
 
-# Timing system variables
-level_time_limit = 180  # Starting time for level 1 (120 seconds)
+
+level_time_limit = 180  
 level_time_remaining = 180
 level_timer_active = False
-timer_frames = 0  # Counter for frames to track seconds
+timer_frames = 0
 
-# Path tracking system
-visited_paths = set()  # Set to store visited path coordinates
-path_track_size = 25   # Size of the tracking area around player
 
+visited_paths = set() 
+path_track_size = 25   
 def init_3d():
     """Initialize OpenGL 3D settings including lighting"""
     glEnable(GL_DEPTH_TEST)
