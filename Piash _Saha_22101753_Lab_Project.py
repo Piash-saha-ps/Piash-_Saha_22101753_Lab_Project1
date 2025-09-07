@@ -909,18 +909,17 @@ def update_jump():
     global is_jumping, jump_velocity, player_pos
     
     if is_jumping:
-        # Update vertical position
+       
         player_pos[2] += jump_velocity
         
-        # Apply gravity
+
         jump_velocity += gravity
         
-        # Check if reached maximum height (can't jump higher than walls)
+      
         if player_pos[2] >= max_jump_height:
             player_pos[2] = max_jump_height
-            jump_velocity = min(jump_velocity, 0)  # Only allow falling
-        
-        # Check if landed on ground
+            jump_velocity = min(jump_velocity, 0)  
+       
         if player_pos[2] <= ground_level:
             player_pos[2] = ground_level
             is_jumping = False
@@ -930,7 +929,7 @@ def check_police_detection():
     """Check if player is in any police detection zone"""
     global game_over, player_health, player_lives, respawn_timer, showing_respawn_message
     
-    # Skip detection if in god mode
+  
     if cheat_mode and god_mode:
         return
     
@@ -938,13 +937,12 @@ def check_police_detection():
         px, py, pz = police
         player_x, player_y, _ = player_pos
         
-        # Calculate distance to player
+      
         dist_to_player = math.sqrt((px - player_x)**2 + (py - player_y)**2)
-        
-        # If player is in detection range (150 units)
+       
         if dist_to_player < 150:
             if not (cheat_mode and god_mode):
-                # Reduce health instead of immediate game over
+            
                 player_health -= 2
                 if player_health <= 0:
                     handle_player_death()
@@ -952,21 +950,21 @@ def check_police_detection():
 
 def draw_police_detection_zone():
     """Draw red circles showing police detection zones"""
-    # Don't show detection zones in god mode
+  
     if cheat_mode and god_mode:
         return
         
     glDisable(GL_LIGHTING)
     for police in police_positions:
         px, py, pz = police
-        glColor3f(1.0, 0.0, 0.0)  # Red color
+        glColor3f(1.0, 0.0, 0.0) 
         glBegin(GL_TRIANGLE_FAN)
-        glVertex3f(px, py, 1)  # Center point
+        glVertex3f(px, py, 1)  
         for angle in range(0, 361, 10):
             rad = math.radians(angle)
-            x = px + 150 * math.cos(rad)  # 150 is detection radius
+            x = px + 150 * math.cos(rad) 
             y = py + 150 * math.sin(rad)
-            glVertex3f(x, y, 1)  # Slightly above floor to avoid z-fighting
+            glVertex3f(x, y, 1) 
         glEnd()
     glEnable(GL_LIGHTING)
 
@@ -977,23 +975,22 @@ def toggle_cheat_mode():
     cheat_mode = not cheat_mode
     
     if cheat_mode:
-        # Enable all cheat features automatically
+      
         god_mode = True
         wall_walk_mode = True
-        laser_disabled = True  # Disable lasers in cheat mode
-        player_health = max_health  # Restore full health
+        laser_disabled = True 
+        player_health = max_health  
     else:
-        # Disable all cheat features
+    
         god_mode = False
         wall_walk_mode = False
-        laser_disabled = False  # Re-enable lasers when cheat mode is off
+        laser_disabled = False  
 
 def init_level_timer():
     """Initialize timer for current level"""
     global level_time_limit, level_time_remaining, level_timer_active, timer_frames
     
-    # Calculate time limit: 120 seconds for level 1, reduce by 10 seconds each level
-    # Minimum time limit of 30 seconds
+ 
     level_time_limit = max(30, 180 - (level - 1) * 10)
     level_time_remaining = level_time_limit
     level_timer_active = True
@@ -1006,28 +1003,28 @@ def update_timer():
     if not level_timer_active or game_over or showing_level_message or showing_respawn_message or cheat_mode:
         return
     
-    # Count frames (assuming 60 FPS, so 60 frames = 1 second)
+
     timer_frames += 1
     if timer_frames >= 60:
         timer_frames = 0
         level_time_remaining -= 1
         
-        # Check if time is up - game over immediately
+      
         if level_time_remaining <= 0:
             global death_cause
             death_cause = "time"
-            player_lives = 0  # Set lives to 0 when time runs out
+            player_lives = 0  
             game_over = True
             level_timer_active = False
 
 def get_timer_color():
     """Get color for timer display based on remaining time"""
     if level_time_remaining > level_time_limit * 0.5:
-        return (0.0, 1.0, 0.0)  # Green
+        return (0.0, 1.0, 0.0)  
     elif level_time_remaining > level_time_limit * 0.25:
-        return (1.0, 1.0, 0.0)  # Yellow
+        return (1.0, 1.0, 0.0)  
     else:
-        return (1.0, 0.0, 0.0)  # Red
+        return (1.0, 0.0, 0.0)  
 
 def format_time(seconds):
     """Format time as MM:SS"""
@@ -1039,12 +1036,12 @@ def update_visited_paths():
     """Update the visited paths based on player position"""
     global visited_paths
     
-    # Get player's current maze grid position
+   
     cell_size = WALL_THICKNESS * 2
     grid_x = int((player_pos[0] - maze_offset_x) // cell_size)
     grid_y = int((player_pos[1] - maze_offset_y) // cell_size)
     
-    # Check if position is valid and is a path (not a wall)
+   
     if (0 <= grid_y < len(maze) and 
         0 <= grid_x < len(maze[0]) and 
         maze[grid_y][grid_x] == 0):
@@ -1059,60 +1056,58 @@ def handle_player_death():
     """Handle player death - lose a life and respawn or game over"""
     global player_lives, player_health, respawn_timer, showing_respawn_message, game_over, level_timer_active, death_position, death_cause
     
-    # Store the position where player died
+   
     death_position = [player_pos[0], player_pos[1], player_pos[2]]
-    death_cause = "police"  # Death caused by police
+    death_cause = "police" 
     
     player_lives -= 1
-    level_timer_active = False  # Pause timer during respawn
+    level_timer_active = False  
     
     if player_lives > 0:
-        # Still have lives left - show respawn message and start countdown
+       
         showing_respawn_message = True
         respawn_timer = respawn_delay
     else:
-        # No lives left - game over
+      
         game_over = True
 
 def respawn_police_randomly():
     """Respawn police at random valid maze positions, avoiding the death position"""
     global police_positions, police_directions, police_original_positions, police_movement_timers
     
-    # Find valid positions for police (where maze is 0)
     valid_positions = []
     cell_size = WALL_THICKNESS * 2
     
-    # Convert death position to grid coordinates for comparison
+   
     death_grid_x = int((death_position[0] - maze_offset_x) / cell_size)
     death_grid_y = int((death_position[1] - maze_offset_y) / cell_size)
     
     for i in range(len(maze)):
         for j in range(len(maze[0])):
-            if maze[i][j] == 0:  # Empty space
-                # Skip positions too close to death position (within 2 cells)
+            if maze[i][j] == 0:  
+               
                 if abs(j - death_grid_x) <= 2 and abs(i - death_grid_y) <= 2:
                     continue
                 
-                # Convert to world coordinates
+               
                 x = maze_offset_x + j * cell_size + cell_size/2
                 y = maze_offset_y + i * cell_size + cell_size/2
                 valid_positions.append((x, y))
     
-    # Respawn all police at random positions
+    
     for i in range(len(police_positions)):
         if len(valid_positions) > 0:
-            # Select a random position and remove it to avoid duplicates
+           
             pos_index = random.randint(0, len(valid_positions) - 1)
             x, y = valid_positions.pop(pos_index)
             police_positions[i] = [x, y, 0]
             police_original_positions[i] = [x, y]
-            
-            # Random direction for each police
+          
             li = [0, 90, 180, 270]
             police_directions[i] = random.choice(li)
-            police_movement_timers[i] = 0  # Reset movement timer
+            police_movement_timers[i] = 0  
         else:
-            # Fallback: if no positions far enough, use any valid position except exact death spot
+          
             fallback_positions = []
             for i_maze in range(len(maze)):
                 for j_maze in range(len(maze[0])):
@@ -1127,28 +1122,27 @@ def respawn_police_randomly():
                 police_original_positions[i] = [x, y]
                 li = [0, 90, 180, 270]
                 police_directions[i] = random.choice(li)
-                police_movement_timers[i] = 0  # Reset movement timer
+                police_movement_timers[i] = 0 
 
 def respawn_player():
     """Respawn the player at death position with random police placement"""
     global player_health, showing_respawn_message, level_timer_active, player_direction
     
-    # Reset health and direction
+   
     player_health = max_health
     player_direction = 0
     
-    # Respawn player at death position
+
     player_pos[0] = death_position[0]
     player_pos[1] = death_position[1]
     player_pos[2] = death_position[2]
     
-    # Respawn police randomly
+
     respawn_police_randomly()
     
-    # Mark current position as visited
     update_visited_paths()
     
-    # Resume game
+
     showing_respawn_message = False
     level_timer_active = True
 
@@ -1169,19 +1163,18 @@ def draw_visited_paths():
     cell_size = WALL_THICKNESS * 2
     
     glDisable(GL_LIGHTING)
-    glColor3f(1.0, 1.0, 0.0)  # Yellow color for visited paths
-    
-    # Enable blending for semi-transparent effect
+    glColor3f(1.0, 1.0, 0.0) 
+   
     glEnable(GL_BLEND)
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-    glColor4f(1.0, 1.0, 0.0, 0.6)  # Semi-transparent yellow
+    glColor4f(1.0, 1.0, 0.0, 0.6) 
     
     for grid_x, grid_y in visited_paths:
-        # Calculate world position
+       
         world_x = maze_offset_x + grid_x * cell_size + cell_size/2
         world_y = maze_offset_y + grid_y * cell_size + cell_size/2
         
-        # Draw a yellow square on the floor
+       
         glBegin(GL_QUADS)
         half_size = path_track_size
         glVertex3f(world_x - half_size, world_y - half_size, 2)
@@ -1196,16 +1189,16 @@ def draw_visited_paths():
 class Laser:
     """Laser security system with moving endpoints"""
     def __init__(self, x1, z1, x2, z2, movement_type='static'):
-        # Convert 2D coordinates to 3D maze coordinates
-        self.original_start = [x1, z1, 5]  # 5 units above ground
+        
+        self.original_start = [x1, z1, 5]  
         self.original_end = [x2, z2, 5]
-        self.start = [x1, z1, 5]  # Current position
-        self.end = [x2, z2, 5]    # Current position
+        self.start = [x1, z1, 5]  
+        self.end = [x2, z2, 5]    
         self.active = True
         self.movement_type = movement_type
-        self.movement_speed = 0.01  # Reduced from 0.02 for slower movement
+        self.movement_speed = 0.01  
         self.movement_time = 0
-        self.movement_range = 100  # Movement range in maze units
+        self.movement_range = 100  
     
     def update(self):
         """Update laser movement based on type"""
@@ -1215,7 +1208,7 @@ class Laser:
         self.movement_time += self.movement_speed
         
         if self.movement_type == 'horizontal_fixed':
-            # One end fixed, other moves horizontally
+          
             offset = math.sin(self.movement_time) * self.movement_range
             self.start[0] = self.original_start[0]
             self.start[1] = self.original_start[1]
@@ -1223,7 +1216,7 @@ class Laser:
             self.end[1] = self.original_end[1] + offset
             
         elif self.movement_type == 'vertical_fixed':
-            # One end fixed, other moves vertically
+           
             offset = math.sin(self.movement_time) * self.movement_range
             self.start[0] = self.original_start[0]
             self.start[1] = self.original_start[1]
@@ -1235,17 +1228,16 @@ class Laser:
         if not self.active:
             return False
         
-        # Check if player is at laser height (around 5 units)
-        # If player is jumping high enough, they should avoid lasers
-        if player_z > 8:  # Lowered from 15 to 8 for more generous jumping
+       
+        if player_z > 8:  
             return False
         
-        # Calculate distance from player to laser line
+      
         x1, y1 = self.start[0], self.start[1]
         x2, y2 = self.end[0], self.end[1]
         px, py = player_x, player_y
         
-        # Check if player is within the laser segment bounds first (with small buffer)
+        
         min_x = min(x1, x2) - 5
         max_x = max(x1, x2) + 5
         min_y = min(y1, y2) - 5
@@ -1254,27 +1246,26 @@ class Laser:
         if not (px >= min_x and px <= max_x and py >= min_y and py <= max_y):
             return False
         
-        # Line equation: Ax + By + C = 0
+    
         A = y2 - y1
         B = x1 - x2
         C = x2 * y1 - x1 * y2
         
-        # Distance from point to line
+   
         if A == 0 and B == 0:
             return False
             
         distance = abs(A * px + B * py + C) / math.sqrt(A * A + B * B)
         
-        # Much more precise collision - only hit if very close to the actual laser line
-        # Use player radius (8) to determine collision with laser beam
-        return distance <= PLAYER_RADIUS  # Only hit if laser line intersects player body
+    
+        return distance <= PLAYER_RADIUS  
     
     def draw(self):
         """Draw the laser beam and emitters"""
         if not self.active:
             return
         
-        # Draw laser emitters at both ends
+       
         for pos in [self.start, self.end]:
             glPushMatrix()
             glTranslatef(pos[0], pos[1], pos[2])
@@ -1283,7 +1274,6 @@ class Laser:
             glutSolidCube(1.0)
             glPopMatrix()
         
-        # Draw laser beam
         glDisable(GL_LIGHTING)
         glColor3f(*LASER_COLOR)
         glLineWidth(4.0)
@@ -1299,12 +1289,12 @@ def advance_level():
     global level, treasure_collected, level_complete, num_police
     global showing_level_message, level_message_timer, waiting_for_enter
     global near_treasure, near_door, showing_escape_message, waiting_for_next_level
-    global player_pos, player_direction  # Add player position reset
+    global player_pos, player_direction  
     
     print(f"Advancing from level {level} to level {level + 1}")
     
     level += 1
-    num_police += 1  # Increase number of police
+    num_police += 1  
     
     print(f"New level: {level}, Police count: {num_police}")
     
@@ -1316,8 +1306,7 @@ def advance_level():
     showing_escape_message = False
     waiting_for_next_level = False
     
-    # Reset player position to starting position
-    player_direction = 0  # Reset player facing direction
+    player_direction = 0  
     cell_size = WALL_THICKNESS * 2
     for i in range(len(maze)):
         for j in range(len(maze[0])):
@@ -1332,20 +1321,17 @@ def advance_level():
     
     print(f"Player reset to starting position: ({player_pos[0]:.1f}, {player_pos[1]:.1f}, {player_pos[2]:.1f})")
     
-    # Clear visited paths for new level
     clear_visited_paths()
     
-    # Initialize timer for new level
     init_level_timer()
     
-    # Show level message without waiting for enter
     showing_level_message = True
-    level_message_timer = 120  # Show for 120 frames (about 2 seconds)
-    waiting_for_enter = False  # Don't wait for enter key press
+    level_message_timer = 120  
+    waiting_for_enter = False  
     
     print(f"About to place game objects for level {level}")
     
-    # Regenerate game objects
+    
     place_game_objects()
     
     print(f"Level {level} setup complete")
@@ -1354,7 +1340,7 @@ def check_game_events():
     """Check for treasure collection and police encounters"""
     global treasure_collected, level_complete, game_over, player_health, near_treasure, near_door, showing_escape_message
     
-    # Check if player is near treasure (for display purposes)
+  
     if not treasure_collected:
         dist_to_treasure = math.sqrt(
             (player_pos[0] - treasure_pos[0])**2 +
@@ -1364,7 +1350,7 @@ def check_game_events():
     else:
         near_treasure = False
     
-    # Check if player is near door (only after collecting treasure)
+   
     if treasure_collected:
         dist_to_door = math.sqrt(
             (player_pos[0] - door_pos[0])**2 +
@@ -1374,7 +1360,6 @@ def check_game_events():
     else:
         near_door = False
     
-    # Check police encounters (direct collision)
     if not (cheat_mode and god_mode):
         for police in police_positions:
             dist_to_police = math.sqrt(
@@ -1382,7 +1367,7 @@ def check_game_events():
                 (player_pos[1] - police[1])**2
             )
             if dist_to_police < PLAYER_RADIUS + POLICE_RADIUS:
-                player_health -= 5  # Bigger damage for direct contact
+                player_health -= 5  
                 if player_health <= 0:
                     handle_player_death()
                 break
@@ -1406,41 +1391,37 @@ def keyboardListener(key, x, y):
     global player_pos, player_direction, first_person_view, top_view, zoom_level, game_over, waiting_for_enter
     global w_key_pressed, space_key_pressed, waiting_for_next_level, showing_escape_message
    
-    # Handle treasure collection with P key
     if key == b'p' or key == b'P':
         collect_treasure()
         if near_door and treasure_collected:
             escape_through_door()
     
-    # Handle next level progression with N key
     if (key == b'n' or key == b'N') and waiting_for_next_level:
         print(f"N key pressed! waiting_for_next_level: {waiting_for_next_level}")
         waiting_for_next_level = False
         showing_escape_message = False
         advance_level()
     
-    # Jump when Space is pressed (during normal gameplay)
     if key == b' ' and not game_over and not level_complete and not showing_respawn_message:
         space_key_pressed = True
         jump()
-        # Don't return here - allow other key processing to continue
+        
    
-    # Reset the game if R is pressed during game over
+ 
     if key == b'r' and game_over:
         reset_game()
         return
    
-    # Don't process other inputs during respawn message
+   
     if showing_respawn_message:
         return
    
-    # Cheat mode controls - only C key needed
+   
     if key == b'c':
         toggle_cheat_mode()
         return
     
-    # Camera view controls - allow these even during game over
-    # Toggle views
+  
     if key == b'v':
         if top_view:
             top_view = False
@@ -1453,13 +1434,13 @@ def keyboardListener(key, x, y):
         update_camera()
         return
         
-    # Toggle zoom
+  
     if key == b'z' and not first_person_view and not top_view:
         zoom_level = max_zoom if zoom_level == 1.0 else 1.0
         update_camera()
         return
         
-    # Top-down view
+   
     if key == b't':
         top_view = True
         first_person_view = False
@@ -1469,16 +1450,16 @@ def keyboardListener(key, x, y):
     if game_over or level_complete:
         return
    
-    # Movement vectors
+   
     forward_x = math.cos(math.radians(player_direction)) * player_speed
     forward_y = math.sin(math.radians(player_direction)) * player_speed
     right_x = math.cos(math.radians(player_direction - 90)) * player_speed
     right_y = math.sin(math.radians(player_direction - 90)) * player_speed
    
-    # Movement controls
+  
     if key == b'w':
         w_key_pressed = True
-        # Normal forward movement (jumping provides automatic forward movement)
+        
         movement_with_collision_detection(forward_x, forward_y)
     elif key == b's': movement_with_collision_detection(-forward_x, -forward_y)
     elif key == b'a': movement_with_collision_detection(-right_x, -right_y)
@@ -1559,34 +1540,34 @@ def idle():
         if level_message_timer <= 0:
             showing_level_message = False
     
-    # Update respawn timer if showing respawn message
+ 
     if showing_respawn_message:
         update_respawn_timer()
     
     if not game_over and not showing_level_message and not showing_respawn_message:
-        update_jump()  # Update jump physics
+        update_jump() 
         move_police()
         check_police_detection() 
         update_lasers()
         check_laser_collision()
         check_game_events()
-        update_timer()  # Update the level timer
+        update_timer()  
     glutPostRedisplay()
 
 def display():
-    """Main display function"""
+   
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
     setupCamera()
     update_lighting()
     draw_floor()
-    draw_visited_paths()  # Draw visited paths before other objects
+    draw_visited_paths()  
     draw_police_detection_zone() 
     draw_maze()
     draw_player()
     draw_police()
     draw_lasers()
     draw_treasure()
-    draw_escape_door()  # Draw escape door
+    draw_escape_door()  
     draw_health_bar()
     draw_cheat_indicators()
     display_game_info()
@@ -1596,20 +1577,19 @@ def display_game_info():
     """Display game status information"""
     view_mode = "Top View" if top_view else "First Person" if first_person_view else "Third Person"
     
-    # Handle respawn message display
+   
     if showing_respawn_message:
-        # Show respawn message in the center of the screen
+       
         draw_text(400, 400, f"YOU HAVE {player_lives} LIVES LEFT", font_size='large', color=(1.0, 0.5, 0.0))
         remaining_seconds = (respawn_timer // 60) + 1
         draw_text(400, 350, f"RESPAWNING IN {remaining_seconds} SECONDS...", color=(1.0, 1.0, 0.0))
         return
     
-    # Handle game over display
+  
     if game_over:
-        # Show the game over message in the center of the screen
+       
         draw_text(400, 400, "GAME OVER", font_size='large', color=(1.0, 0.0, 0.0))
         
-        # Check what caused the game over and display appropriate message
         if death_cause == "time":
             draw_text(400, 350, "TIME UP!", color=(1.0, 0.3, 0.3))
             draw_text(400, 320, "PRESS 'R' TO RESTART", color=(0.0, 1.0, 0.5))
@@ -1620,75 +1600,74 @@ def display_game_info():
             draw_text(400, 350, "CAUGHT BY POLICE!", color=(1.0, 0.3, 0.3))
             draw_text(400, 320, "PRESS 'R' TO RESTART", color=(0.0, 1.0, 0.5))
         else:
-            # Fallback for any other case
+           
             draw_text(400, 350, "ALL LIVES LOST!", color=(1.0, 0.3, 0.3))
             draw_text(400, 320, "PRESS 'R' TO RESTART", color=(0.0, 1.0, 0.5))
         return
     
-    # Handle level up message
+    
     elif showing_level_message:
-        # Make text bigger and centered
+       
         draw_text(400, 400, f"LEVEL {level}", font_size='large', color=(0.2, 0.8, 0.2))
         draw_text(400, 350, f"{num_police} POLICE OFFICERS HUNTING YOU!", color=(1.0, 0.5, 0.0))
         draw_text(400, 330, f"{len(lasers)} LASER SECURITY SYSTEMS ACTIVE!", color=(1.0, 0.0, 0.0))
         draw_text(400, 300, f"TIME LIMIT: {format_time(level_time_limit)}", color=(1.0, 1.0, 0.0))
-        # Removed "PRESS ENTER TO CONTINUE" text - N key directly advances level
+        
         return
         
-    # Handle escape message display
+  
     if showing_escape_message:
         draw_text(400, 400, f"YOU ESCAPED LEVEL {level}!", font_size='large', color=(0.0, 1.0, 0.0))
         draw_text(400, 350, "PRESS N TO GO TO NEXT LEVEL", color=(1.0, 1.0, 0.0))
         return
         
-    # Regular game info display with interaction prompts
     if near_treasure and not treasure_collected:
         status = "Press P to collect treasure!"
-        status_color = (1.0, 1.0, 0.0)  # Yellow
+        status_color = (1.0, 1.0, 0.0)  
     elif not treasure_collected and near_door:
         status = "Collect the treasure first before using the door!"
-        status_color = (1.0, 0.5, 0.0)  # Orange
+        status_color = (1.0, 0.5, 0.0)  
     elif treasure_collected and not near_door:
         status = "Treasure collected! Find the blue door to escape!"
-        status_color = (0.0, 1.0, 0.3)  # Green
+        status_color = (0.0, 1.0, 0.3)  
     elif treasure_collected and near_door:
         status = "Press P to escape through the door!"
-        status_color = (0.0, 0.8, 1.0)  # Cyan
+        status_color = (0.0, 0.8, 1.0)  
     else:
         status = "Find the treasure and avoid the police!"
-        status_color = (1.0, 1.0, 1.0)  # White
+        status_color = (1.0, 1.0, 1.0)  
 
-    # Draw status with special color
+  
     draw_text(20, 750, status, color=status_color)
     
-    # Draw health if not in god mode
+
     if not (cheat_mode and god_mode):
         health_color = (0.0, 1.0, 0.0) if player_health > 60 else (1.0, 1.0, 0.0) if player_health > 30 else (1.0, 0.0, 0.0)
         draw_text(20, 25, f"Health: {player_health}/{max_health}", color=health_color)
     
-    # Draw lives counter (hide in cheat mode)
+   
     if not cheat_mode:
         lives_color = (1.0, 1.0, 1.0) if player_lives > 1 else (1.0, 1.0, 0.0) if player_lives == 1 else (1.0, 1.0, 1.0)
         draw_text(20, 50, f"Lives: {player_lives}/{max_lives}", color=lives_color)
     
-    # Draw timer
+  
     timer_color = get_timer_color()
     draw_text(750, 750, f"Time: {format_time(level_time_remaining)}", color=timer_color)
     
     y_pos = 700
-    # Draw level info with light blue
+   
     draw_text(20, y_pos, f"Level: {level}", color=(1.0, 1.0, 1.0))
     y_pos -= 20
     
-    # Draw lives count with light green
+
     draw_text(20, y_pos, f"Lives: {player_lives}", color=(1, 1.0, 1.5))
     y_pos -= 20
 
-    # Draw view mode info with light purple
+   
     draw_text(20, y_pos, f"View Mode: {view_mode}", color=(1.7, 1.5, 1.0))
     y_pos -= 20
     
-    # Draw laser system status
+   
     laser_status = "DISABLED" if (cheat_mode and laser_disabled) else "ACTIVE"
     laser_color = (0.5, 1.0, 0.5) if laser_disabled else (1.0, 0.3, 0.3)
     draw_text(20, y_pos, f"Lasers : {laser_status}", color=laser_color)
@@ -1702,12 +1681,12 @@ def reset_game():
     global player_lives, respawn_timer, showing_respawn_message, level_timer_active
     global near_treasure, near_door, showing_escape_message, waiting_for_next_level, death_cause
     
-    # Reset game state
+ 
     game_over = False
     treasure_collected = False
     level_complete = False
     near_treasure = False
-    death_cause = ""  # Reset death cause
+    death_cause = ""  
     near_door = False
     showing_escape_message = False
     waiting_for_next_level = False
@@ -1717,37 +1696,37 @@ def reset_game():
     respawn_timer = 0
     level_timer_active = True
     
-    # Reset cheat modes
+  
     cheat_mode = False
     god_mode = False
     wall_walk_mode = False
-    laser_disabled = False  # Reset laser system
+    laser_disabled = False 
     player_health = max_health
-    player_lives = max_lives  # Reset lives to 3
+    player_lives = max_lives 
     
-    # Reset jump system
+
     global is_jumping, jump_velocity
     is_jumping = False
     jump_velocity = 0.0
     
-    # Reset to level 1
+  
     level = 1
-    num_police = 2  # Initial number of police
+    num_police = 2  
     
-    # Clear visited paths
+    
     clear_visited_paths()
     
-    # Initialize timer for level 1
+    
     init_level_timer()
     
-    # Initialize police movement timers
+    
     police_movement_timers = []
     
-    # Reset player position and orientation to the starting position (1,1)
-    player_direction = 0  # Reset player facing direction
+    
+    player_direction = 0  
     cell_size = WALL_THICKNESS * 2
     
-    # Set player to the starting position (row 1, col 1 - first open cell)
+    
     start_row = 1
     start_col = 1
     player_pos[0] = maze_offset_x + start_col * cell_size + cell_size/2
@@ -1756,25 +1735,25 @@ def reset_game():
     
     print(f"Player reset to starting position: ({player_pos[0]:.1f}, {player_pos[1]:.1f}, {player_pos[2]:.1f})")
     
-    # Mark starting position as visited
+
     update_visited_paths()
     
-    # Regenerate game objects
+
     place_game_objects()
     update_camera()
 
 def init():
     """Initialize the game"""
     global player_health, player_lives
-    glClearColor(0.2, 0.2, 0.2, 1.0)  # Dark grey background
+    glClearColor(0.2, 0.2, 0.2, 1.0) 
     init_3d()
-    player_health = max_health  # Initialize player health
-    player_lives = max_lives    # Initialize player lives
+    player_health = max_health 
+    player_lives = max_lives    
     
-    # Initialize timer for level 1
+  
     init_level_timer()
 
-    # Find starting position
+   
     cell_size = WALL_THICKNESS * 2
     for i in range(len(maze)):
         for j in range(len(maze[0])):
@@ -1782,7 +1761,7 @@ def init():
                 player_pos[0] = maze_offset_x + j * cell_size + cell_size/2
                 player_pos[1] = maze_offset_y + i * cell_size + cell_size/2
                 player_pos[2] = 0
-                # Mark starting position as visited
+               
                 update_visited_paths()
                 return
     
